@@ -1,0 +1,5 @@
+{
+  "name": "Personal Blog",
+  "description": "An elegant, highly polished personal blog application with custom markdown editing, profile personalization, dynamic categorization, and persistent client-side storage.",
+  "requestFramePermissions": []
+}

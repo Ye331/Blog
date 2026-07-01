@@ -1,0 +1,2 @@
+-- Placeholder migration for the Java backend.
+-- Add posts/profile/admin schema here when implementing the Spring Boot API.

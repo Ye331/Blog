@@ -1,0 +1,14 @@
+[Unit]
+Description=yeyeyang.cn personal blog
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/personal-blog
+EnvironmentFile=/opt/personal-blog/.env
+ExecStart=/usr/bin/java -jar /opt/personal-blog/personal-blog.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

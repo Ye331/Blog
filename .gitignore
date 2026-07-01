@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+frontend/dist/
+backend/target/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+.idea/
+.vscode/
