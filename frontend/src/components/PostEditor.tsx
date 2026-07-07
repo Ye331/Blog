@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ImageUp, Trash2, X } from 'lucide-react';
 import { BlogPost } from '../types';
 import MarkdownContent from './MarkdownContent';
@@ -18,6 +18,8 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
   const [readTime, setReadTime] = useState('5 min read');
   const [uploadError, setUploadError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isContentImageUploading, setIsContentImageUploading] = useState(false);
+  const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (postToEdit) {
@@ -58,6 +60,21 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
     });
   };
 
+  const uploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch('/api/uploads/images', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error(response.status === 413 ? 'Image must be 5MB or smaller.' : 'Upload failed. Use JPG, PNG, WebP, or GIF.');
+    }
+    const result = await response.json() as { url: string };
+    return result.url;
+  };
+
   const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -66,22 +83,42 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
     setUploadError('');
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await fetch('/api/uploads/images', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-      if (!response.ok) {
-        throw new Error(response.status === 413 ? 'Image must be 5MB or smaller.' : 'Upload failed. Use JPG, PNG, WebP, or GIF.');
-      }
-      const result = await response.json() as { url: string };
-      setCoverImage(result.url);
+      setCoverImage(await uploadImage(file));
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'Upload failed.');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleContentImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setUploadError('');
+    setIsContentImageUploading(true);
+    try {
+      const imageUrl = await uploadImage(file);
+      const textarea = contentTextareaRef.current;
+      const insertion = `\n\n![${file.name.replace(/\.[^.]+$/, '')}](${imageUrl})\n\n`;
+      if (!textarea) {
+        setContent((current) => `${current}${insertion}`);
+        return;
+      }
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const nextContent = `${content.slice(0, start)}${insertion}${content.slice(end)}`;
+      setContent(nextContent);
+      window.requestAnimationFrame(() => {
+        textarea.focus();
+        const cursor = start + insertion.length;
+        textarea.setSelectionRange(cursor, cursor);
+      });
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed.');
+    } finally {
+      setIsContentImageUploading(false);
     }
   };
 
@@ -115,7 +152,7 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
             <div className="flex flex-col md:flex-row gap-4">
               {coverImage ? (
                 <div className="w-full md:w-56 aspect-video bg-white border-2 border-neutral-900 rounded-[12px] overflow-hidden">
-                  <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                  <img src={coverImage} alt="Cover preview" className="w-full h-full object-contain" />
                 </div>
               ) : (
                 <div className="w-full md:w-56 aspect-video bg-white border-2 border-dashed border-neutral-300 rounded-[12px] flex items-center justify-center text-[10px] uppercase tracking-wider text-neutral-400 font-bold">
@@ -148,7 +185,15 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <label className="space-y-1.5 block">
               <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Markdown Workspace</span>
-              <textarea required rows={16} value={content} onChange={(event) => setContent(event.target.value)} className="w-full px-4 py-3 text-sm bg-white border-2 border-neutral-900 rounded-[12px] font-mono leading-relaxed" />
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">Use Markdown, $math$, and images.</p>
+                <label className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white hover:bg-neutral-50 border-2 border-neutral-900 rounded-[10px] text-[10px] uppercase tracking-wider font-bold cursor-pointer shrink-0">
+                  <ImageUp className="h-3.5 w-3.5" />
+                  <span>{isContentImageUploading ? 'Uploading...' : 'Insert Image'}</span>
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleContentImageUpload} disabled={isContentImageUploading} className="sr-only" />
+                </label>
+              </div>
+              <textarea ref={contentTextareaRef} required rows={16} value={content} onChange={(event) => setContent(event.target.value)} className="w-full px-4 py-3 text-sm bg-white border-2 border-neutral-900 rounded-[12px] font-mono leading-relaxed" />
             </label>
             <div className="space-y-1.5 block">
               <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Live Preview</span>

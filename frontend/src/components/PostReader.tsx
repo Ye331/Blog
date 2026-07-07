@@ -27,7 +27,7 @@ export default function PostReader({ post, onBack }: PostReaderProps) {
         </div>
         {post.coverImage && (
           <div className="w-full aspect-video rounded-[24px] overflow-hidden bg-white border-2 border-neutral-900 shadow-[6px_6px_0px_0px_rgba(17,17,17,1)]">
-            <img src={post.coverImage} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-cover filter grayscale-[5%]" />
+            <img src={post.coverImage} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-contain filter grayscale-[5%]" />
           </div>
         )}
         <div className="pt-6 text-neutral-800">

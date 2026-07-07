@@ -17,7 +17,7 @@ export default function PostCard({ post, isAdmin, onClick, onEdit, onDelete }: P
     <article onClick={onClick} className={`group relative flex flex-col md:flex-row gap-8 p-6 md:p-8 rounded-[24px] border-2 border-transparent ${hoverColors[idNum % hoverColors.length]} hover:border-neutral-900 hover:shadow-[6px_6px_0px_0px_rgba(17,17,17,1)] hover:-translate-y-1 transition-all duration-300 bg-transparent`} id={`post-card-${post.id}`}>
       {post.coverImage && (
         <div className="md:w-1/3 h-48 md:h-44 overflow-hidden shrink-0 bg-white border-2 border-neutral-900 rounded-[16px] shadow-[3px_3px_0px_0px_rgba(17,17,17,1)]">
-          <img src={post.coverImage} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-cover filter grayscale-[15%] group-hover:grayscale-0 transition-all duration-500" />
+          <img src={post.coverImage} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-contain filter grayscale-[15%] group-hover:grayscale-0 transition-all duration-500" />
         </div>
       )}
       <div className="flex-1 flex flex-col justify-between space-y-4">
