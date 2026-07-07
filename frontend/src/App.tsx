@@ -196,7 +196,13 @@ export default function App() {
       </AnimatePresence>
       <AnimatePresence>{isAdmin && isEditorOpen && <PostEditor postToEdit={postToEdit} onSave={handleSavePost} onClose={() => { setIsEditorOpen(false); setPostToEdit(null); }} />}</AnimatePresence>
       <AnimatePresence>{isAdmin && isProfileModalOpen && <ProfileModal currentProfile={profile} onSave={handleSaveProfile} onClose={() => setIsProfileModalOpen(false)} />}</AnimatePresence>
-      <footer className="w-full py-12 mt-auto border-t-2 border-dashed border-neutral-900/10 bg-[#FCF9EA]"><div className="mx-auto max-w-5xl px-6 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-sans uppercase tracking-[0.15em] text-neutral-400"><span>&copy; 2026 {profile.name}. All rights reserved.</span><div className="flex items-center space-x-4"><span>Archived Locally</span></div></div></footer>
+      <footer className="w-full py-10 mt-auto border-t-2 border-dashed border-neutral-900/10 bg-[#FCF9EA]">
+        <div className="mx-auto max-w-5xl px-6 text-center">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="inline-flex px-4 py-2 bg-white/60 hover:bg-white border-2 border-transparent hover:border-neutral-900 rounded-full text-[10px] font-sans uppercase tracking-[0.15em] font-bold text-neutral-400 hover:text-neutral-900 transition-all">
+            苏ICP备2026044151号-1
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
