@@ -26,7 +26,15 @@ cd backend
 mvn spring-boot:run
 ```
 
-The Java backend is intentionally a scaffold for now. Implement API modules under `backend/src/main/java/cn/yeyeyang/blog`.
+The Java backend serves the blog API with Spring Boot, Spring Security, JPA, Flyway, and PostgreSQL. Public read APIs are available under `/api/posts` and `/api/profile`; admin writes require the `blog_admin_session` HttpOnly cookie created by `/api/auth/login`.
+
+Configure production credentials through environment variables:
+
+```bash
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="replace-with-a-strong-password"
+SESSION_COOKIE_SECURE="true"
+```
 
 ## Deployment
 

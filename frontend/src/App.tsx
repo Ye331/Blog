@@ -16,6 +16,7 @@ import ProfileModal from './components/ProfileModal';
 
 type AuthUser = { role: 'admin' };
 type PostFormData = Omit<BlogPost, 'id' | 'date'> & { id?: string };
+const ADMIN_PATH = '/studio-a7ed8f996c916a75';
 
 const apiFetch = async <T,>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
@@ -93,7 +94,7 @@ export default function App() {
   const [postToEdit, setPostToEdit] = useState<BlogPost | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  const isAdminRoute = window.location.pathname === '/admin';
+  const isAdminRoute = window.location.pathname === ADMIN_PATH;
   const isAdmin = authUser?.role === 'admin' && isAdminRoute;
 
   const loadData = async () => {
