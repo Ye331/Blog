@@ -17,3 +17,5 @@ blog:
     password: secret
   session:
     cookie-secure: false
+  uploads:
+    dir: ${java.io.tmpdir}/personal-blog-test-uploads

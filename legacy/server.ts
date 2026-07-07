@@ -166,12 +166,6 @@ app.put('/api/profile', requireAdmin, (req, res) => {
   res.json(profile);
 });
 
-app.post('/api/reset-demo-data', requireAdmin, (_req, res) => {
-  profile = DEFAULT_PROFILE;
-  posts = INITIAL_POSTS;
-  res.json({ profile, posts });
-});
-
 // Serve frontend static files
 app.use(express.static(path.resolve('dist')));
 

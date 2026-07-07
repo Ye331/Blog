@@ -54,13 +54,6 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    @Transactional
-    public List<PostDto> resetDefaults() {
-        postRepository.deleteAll();
-        postRepository.saveAll(DefaultPosts.create());
-        return listPosts();
-    }
-
     private PostEntity findPost(String id) {
         return postRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));

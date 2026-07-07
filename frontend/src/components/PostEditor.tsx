@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { ImageUp, Trash2, X } from 'lucide-react';
 import { BlogPost } from '../types';
+import MarkdownContent from './MarkdownContent';
 
 interface PostEditorProps {
   postToEdit?: BlogPost | null;
@@ -8,19 +9,15 @@ interface PostEditorProps {
   onClose: () => void;
 }
 
-const PRESET_COVERS = [
-  { name: 'Minimal Workspace', url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Design Studio', url: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Developer Desk', url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80' },
-];
-
 export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorProps) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Design');
+  const [category, setCategory] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [readTime, setReadTime] = useState('5 min read');
+  const [uploadError, setUploadError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (postToEdit) {
@@ -32,12 +29,13 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
       setReadTime(postToEdit.readTime);
     } else {
       setTitle('');
-      setCategory('Design');
+      setCategory('');
       setExcerpt('');
       setContent('');
-      setCoverImage(PRESET_COVERS[0].url);
+      setCoverImage('');
       setReadTime('5 min read');
     }
+    setUploadError('');
   }, [postToEdit]);
 
   useEffect(() => {
@@ -58,6 +56,33 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
       coverImage: coverImage || undefined,
       readTime,
     });
+  };
+
+  const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setUploadError('');
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/uploads/images', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(response.status === 413 ? 'Image must be 5MB or smaller.' : 'Upload failed. Use JPG, PNG, WebP, or GIF.');
+      }
+      const result = await response.json() as { url: string };
+      setCoverImage(result.url);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload failed.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -85,17 +110,34 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
             </label>
           </div>
 
-          <label className="space-y-2 block">
-            <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Cover Image URL</span>
-            <input value={coverImage} onChange={(event) => setCoverImage(event.target.value)} className="w-full px-4 py-2.5 text-xs bg-white border-2 border-neutral-900 rounded-[12px] font-mono" />
-          </label>
-
-          <div className="flex flex-wrap gap-2">
-            {PRESET_COVERS.map((preset) => (
-              <button key={preset.name} type="button" onClick={() => setCoverImage(preset.url)} className="px-3 py-1.5 text-[10px] uppercase tracking-wider font-bold border-2 rounded-full bg-white hover:border-neutral-900">
-                {preset.name}
-              </button>
-            ))}
+          <div className="space-y-3">
+            <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Cover Image</span>
+            <div className="flex flex-col md:flex-row gap-4">
+              {coverImage ? (
+                <div className="w-full md:w-56 aspect-video bg-white border-2 border-neutral-900 rounded-[12px] overflow-hidden">
+                  <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-full md:w-56 aspect-video bg-white border-2 border-dashed border-neutral-300 rounded-[12px] flex items-center justify-center text-[10px] uppercase tracking-wider text-neutral-400 font-bold">
+                  No cover
+                </div>
+              )}
+              <div className="flex-1 space-y-3">
+                <label className="inline-flex items-center space-x-2 px-4 py-2.5 bg-white hover:bg-neutral-50 border-2 border-neutral-900 rounded-[12px] shadow-[2px_2px_0px_0px_rgba(17,17,17,1)] text-[10px] uppercase tracking-wider font-bold cursor-pointer">
+                  <ImageUp className="h-4 w-4" />
+                  <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleCoverUpload} disabled={isUploading} className="sr-only" />
+                </label>
+                {coverImage && (
+                  <button type="button" onClick={() => setCoverImage('')} className="ml-3 inline-flex items-center space-x-2 px-4 py-2.5 bg-[#FFBDBD] hover:bg-[#ffa6a6] border-2 border-neutral-900 rounded-[12px] text-[10px] uppercase tracking-wider font-bold">
+                    <Trash2 className="h-4 w-4" />
+                    <span>Clear</span>
+                  </button>
+                )}
+                <p className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">JPG, PNG, WebP, or GIF. Max 5MB.</p>
+                {uploadError && <p className="text-xs font-bold text-red-600">{uploadError}</p>}
+              </div>
+            </div>
           </div>
 
           <label className="space-y-1.5 block">
@@ -103,10 +145,18 @@ export default function PostEditor({ postToEdit, onSave, onClose }: PostEditorPr
             <input maxLength={180} value={excerpt} onChange={(event) => setExcerpt(event.target.value)} className="w-full px-4 py-2.5 text-sm bg-white border-2 border-neutral-900 rounded-[12px]" />
           </label>
 
-          <label className="space-y-1.5 block">
-            <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Content Workspace</span>
-            <textarea required rows={12} value={content} onChange={(event) => setContent(event.target.value)} className="w-full px-4 py-3 text-sm bg-white border-2 border-neutral-900 rounded-[12px] font-serif leading-relaxed" />
-          </label>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <label className="space-y-1.5 block">
+              <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Markdown Workspace</span>
+              <textarea required rows={16} value={content} onChange={(event) => setContent(event.target.value)} className="w-full px-4 py-3 text-sm bg-white border-2 border-neutral-900 rounded-[12px] font-mono leading-relaxed" />
+            </label>
+            <div className="space-y-1.5 block">
+              <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold block">Live Preview</span>
+              <div className="min-h-[384px] max-h-[520px] overflow-y-auto px-4 py-3 bg-white border-2 border-neutral-900 rounded-[12px]">
+                {content.trim() ? <MarkdownContent content={content} /> : <p className="text-xs font-mono uppercase tracking-wider text-neutral-400">Preview appears here.</p>}
+              </div>
+            </div>
+          </div>
 
           <div className="px-0 py-4 border-t-2 border-neutral-900 flex items-center justify-end space-x-3 bg-[#FCF9EA]">
             <button type="button" onClick={onClose} className="px-4 py-2 text-[11px] uppercase tracking-wider font-bold text-neutral-500 hover:text-neutral-900">Discard</button>

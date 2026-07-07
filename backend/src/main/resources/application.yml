@@ -15,6 +15,10 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 blog:
   admin:
@@ -22,3 +26,5 @@ blog:
     password: ${ADMIN_PASSWORD:change-me-before-deploy}
   session:
     cookie-secure: ${SESSION_COOKIE_SECURE:false}
+  uploads:
+    dir: ${UPLOAD_DIR:/opt/personal-blog/uploads}

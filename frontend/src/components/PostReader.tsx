@@ -1,37 +1,11 @@
-import React from 'react';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BlogPost } from '../types';
+import MarkdownContent from './MarkdownContent';
 
 interface PostReaderProps {
   post: BlogPost;
   onBack: () => void;
-}
-
-function parseInlineStyles(text: string): React.ReactNode[] {
-  return text.split(/(\*\*.*?\*\*|`.*?`)/g).map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={index} className="font-semibold text-neutral-900">{part.slice(2, -2)}</strong>;
-    }
-    if (part.startsWith('`') && part.endsWith('`')) {
-      return <code key={index} className="font-mono text-xs px-1.5 py-0.5 bg-neutral-100 rounded border border-neutral-200">{part.slice(1, -1)}</code>;
-    }
-    return part;
-  });
-}
-
-function renderMarkdown(content: string) {
-  return content.split('\n').map((rawLine, index) => {
-    const line = rawLine.trim();
-    if (!line) return null;
-    if (line.startsWith('# ')) return <h1 key={index} className="text-2xl md:text-3xl font-serif mt-10 mb-4">{line.slice(2)}</h1>;
-    if (line.startsWith('## ')) return <h2 key={index} className="text-xl md:text-2xl font-serif mt-8 mb-4">{line.slice(3)}</h2>;
-    if (line.startsWith('### ')) return <h3 key={index} className="text-lg md:text-xl font-serif mt-6 mb-3">{line.slice(4)}</h3>;
-    if (line.startsWith('> ')) return <blockquote key={index} className="border-l-2 border-neutral-900 pl-6 py-2 my-6 text-neutral-600 italic font-serif bg-neutral-100/30">{line.slice(2)}</blockquote>;
-    if (line.startsWith('* ') || line.startsWith('- ')) return <li key={index} className="ml-6 list-disc text-neutral-700 text-sm md:text-base leading-relaxed my-2 font-serif">{parseInlineStyles(line.slice(2))}</li>;
-    if (line === '---') return <hr key={index} className="my-10 border-t border-neutral-200" />;
-    return <p key={index} className="text-neutral-700 text-[15px] md:text-[17px] leading-relaxed font-serif my-5">{parseInlineStyles(line)}</p>;
-  });
 }
 
 export default function PostReader({ post, onBack }: PostReaderProps) {
@@ -56,7 +30,9 @@ export default function PostReader({ post, onBack }: PostReaderProps) {
             <img src={post.coverImage} alt={post.title} referrerPolicy="no-referrer" className="w-full h-full object-cover filter grayscale-[5%]" />
           </div>
         )}
-        <div className="pt-6 text-neutral-800">{renderMarkdown(post.content)}</div>
+        <div className="pt-6 text-neutral-800">
+          <MarkdownContent content={post.content} />
+        </div>
       </article>
       <div className="mt-20 pt-10 border-t-2 border-dashed border-neutral-900/10 flex flex-col sm:flex-row items-center justify-between text-xs font-serif text-neutral-400 gap-6">
         <span className="flex items-center space-x-2 italic text-neutral-500">

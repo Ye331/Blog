@@ -5,7 +5,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { FileText, RotateCcw } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { INITIAL_POSTS, DEFAULT_PROFILE } from './initialData';
 import { BlogPost, UserProfile } from './types';
 import Header from './components/Header';
@@ -165,18 +165,6 @@ export default function App() {
     setIsProfileModalOpen(false);
   };
 
-  const handleResetDefaults = async () => {
-    if (!isAdmin) return;
-    if (confirm('This will restore the original demo articles. Continue?')) {
-      const result = await apiFetch<{ profile: UserProfile; posts: BlogPost[] }>('/api/reset-demo-data', { method: 'POST' });
-      setPosts(result.posts);
-      setProfile(result.profile);
-      setActivePost(null);
-      setSelectedCategory('All');
-      setSearchQuery('');
-    }
-  };
-
   const handleLogout = async () => {
     await apiFetch<void>('/api/auth/logout', { method: 'POST' });
     setAuthUser(null);
@@ -196,7 +184,6 @@ export default function App() {
             <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-12">
               <div className="flex items-center justify-between mb-8 pb-3 border-b-2 border-dashed border-neutral-900/10">
                 <h2 className="font-sans text-[10px] font-extrabold tracking-[0.2em] text-neutral-400 uppercase">{selectedCategory === 'All' ? 'ALL ESSAYS' : `${selectedCategory.toUpperCase()} ESSAYS`} ({filteredPosts.length})</h2>
-                {isAdmin && <button onClick={handleResetDefaults} className="inline-flex items-center space-x-1 text-[10px] font-sans uppercase tracking-widest font-bold text-neutral-400 hover:text-neutral-900 transition-colors"><RotateCcw className="h-3.5 w-3.5" /><span>Reset Archive</span></button>}
               </div>
               {isDataLoading ? <div className="py-20 text-center text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400">Loading essays...</div> : filteredPosts.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6" id="posts-grid">{filteredPosts.map((post, idx) => <motion.div key={post.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.05, ease: 'easeOut' }}><PostCard post={post} isAdmin={isAdmin} onClick={() => setActivePost(post)} onEdit={() => { if (!isAdmin) return; setPostToEdit(post); setIsEditorOpen(true); }} onDelete={() => handleDeletePost(post.id)} /></motion.div>)}</div>
@@ -209,7 +196,7 @@ export default function App() {
       </AnimatePresence>
       <AnimatePresence>{isAdmin && isEditorOpen && <PostEditor postToEdit={postToEdit} onSave={handleSavePost} onClose={() => { setIsEditorOpen(false); setPostToEdit(null); }} />}</AnimatePresence>
       <AnimatePresence>{isAdmin && isProfileModalOpen && <ProfileModal currentProfile={profile} onSave={handleSaveProfile} onClose={() => setIsProfileModalOpen(false)} />}</AnimatePresence>
-      <footer className="w-full py-12 mt-auto border-t-2 border-dashed border-neutral-900/10 bg-[#FCF9EA]"><div className="mx-auto max-w-5xl px-6 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-sans uppercase tracking-[0.15em] text-neutral-400"><span>&copy; 2026 {profile.name}. All rights reserved.</span><div className="flex items-center space-x-4"><span>Archived Locally</span>{isAdmin && <><span className="h-1 w-1 bg-neutral-300 rounded-full"></span><button onClick={handleResetDefaults} className="hover:text-neutral-900 underline">Factory Reset</button></>}</div></div></footer>
+      <footer className="w-full py-12 mt-auto border-t-2 border-dashed border-neutral-900/10 bg-[#FCF9EA]"><div className="mx-auto max-w-5xl px-6 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-sans uppercase tracking-[0.15em] text-neutral-400"><span>&copy; 2026 {profile.name}. All rights reserved.</span><div className="flex items-center space-x-4"><span>Archived Locally</span></div></div></footer>
     </div>
   );
 }

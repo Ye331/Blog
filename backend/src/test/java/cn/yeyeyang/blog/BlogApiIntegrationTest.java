@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
@@ -25,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.mock.web.MockMultipartFile;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -56,6 +58,10 @@ class BlogApiIntegrationTest {
         mockMvc.perform(put("/api/profile")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validProfileJson("Blocked Author")))
+            .andExpect(status().isUnauthorized());
+
+        MockMultipartFile image = new MockMultipartFile("file", "cover.png", "image/png", pngBytes());
+        mockMvc.perform(multipart("/api/uploads/images").file(image))
             .andExpect(status().isUnauthorized());
     }
 
@@ -106,6 +112,45 @@ class BlogApiIntegrationTest {
     }
 
     @Test
+    void authenticatedAdminCanUploadImages() throws Exception {
+        Cookie sessionCookie = login();
+        MockMultipartFile image = new MockMultipartFile("file", "cover.png", "image/png", pngBytes());
+
+        MvcResult uploadResult = mockMvc.perform(multipart("/api/uploads/images")
+                .file(image)
+                .cookie(sessionCookie))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.url").value(containsString("/uploads/")))
+            .andReturn();
+
+        String uploadedUrl = JsonTestSupport.readString(uploadResult.getResponse().getContentAsString(), "url");
+        mockMvc.perform(get(uploadedUrl))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void imageUploadRejectsUnsupportedTypes() throws Exception {
+        Cookie sessionCookie = login();
+        MockMultipartFile textFile = new MockMultipartFile("file", "note.txt", "text/plain", "not an image".getBytes());
+
+        mockMvc.perform(multipart("/api/uploads/images")
+                .file(textFile)
+                .cookie(sessionCookie))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void imageUploadRejectsOversizedFiles() throws Exception {
+        Cookie sessionCookie = login();
+        MockMultipartFile image = new MockMultipartFile("file", "large.png", "image/png", oversizedPngBytes());
+
+        mockMvc.perform(multipart("/api/uploads/images")
+                .file(image)
+                .cookie(sessionCookie))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void logoutRevokesSessionCookie() throws Exception {
         Cookie sessionCookie = login();
 
@@ -141,6 +186,17 @@ class BlogApiIntegrationTest {
               "coverImage": "https://example.com/cover.jpg"
             }
             """.formatted(title);
+    }
+
+    private byte[] pngBytes() {
+        return new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00};
+    }
+
+    private byte[] oversizedPngBytes() {
+        byte[] bytes = new byte[(5 * 1024 * 1024) + 1];
+        byte[] header = pngBytes();
+        System.arraycopy(header, 0, bytes, 0, header.length);
+        return bytes;
     }
 
     private String validProfileJson(String name) {

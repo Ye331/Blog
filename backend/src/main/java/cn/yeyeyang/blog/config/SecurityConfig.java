@@ -5,6 +5,7 @@ import java.io.IOException;
 import cn.yeyeyang.blog.auth.AdminProperties;
 import cn.yeyeyang.blog.auth.BlogSessionProperties;
 import cn.yeyeyang.blog.auth.CookieAuthenticationFilter;
+import cn.yeyeyang.blog.upload.UploadProperties;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({AdminProperties.class, BlogSessionProperties.class})
+@EnableConfigurationProperties({AdminProperties.class, BlogSessionProperties.class, UploadProperties.class})
 public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(
@@ -33,7 +34,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*", "/api/profile").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/logout").permitAll()
-                .requestMatchers("/", "/index.html", "/studio-a7ed8f996c916a75", "/studio-a7ed8f996c916a75/**", "/assets/**", "/avatar.jpg").permitAll()
+                .requestMatchers("/", "/index.html", "/studio-a7ed8f996c916a75", "/studio-a7ed8f996c916a75/**", "/assets/**", "/uploads/**", "/avatar.jpg").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )

@@ -59,7 +59,7 @@ export default function Header({
         <div className="md:col-span-3 text-center md:text-left space-y-4">
           <div>
             <h1 className="font-sans text-4xl md:text-6xl font-extrabold tracking-tight leading-tight" id="author-name">
-              Hey, I&apos;m {profile.name}
+              {profile.name}
             </h1>
             <div className="inline-flex mt-2 px-3 py-1 bg-white border-2 border-neutral-900 rounded-full text-[10px] font-mono uppercase tracking-wider text-neutral-700">
               {profile.title}

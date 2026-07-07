@@ -25,13 +25,6 @@ public class ProfileService {
         return ProfileDto.from(profileRepository.save(profile));
     }
 
-    @Transactional
-    public ProfileDto resetDefault() {
-        ProfileEntity profile = profileRepository.findById(ProfileEntity.SINGLETON_ID).orElseGet(ProfileEntity::new);
-        applyProfile(profile, defaultProfile());
-        return ProfileDto.from(profileRepository.save(profile));
-    }
-
     private ProfileEntity findProfile() {
         return profileRepository.findById(ProfileEntity.SINGLETON_ID)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
@@ -46,18 +39,6 @@ public class ProfileService {
         profile.setGithub(blankToNull(request.github()));
         profile.setTwitter(blankToNull(request.twitter()));
         profile.setEmail(blankToNull(request.email()));
-    }
-
-    private ProfileDto defaultProfile() {
-        return new ProfileDto(
-            "Yeye Yang",
-            "",
-            "",
-            "/avatar.jpg",
-            null,
-            null,
-            null
-        );
     }
 
     private String required(String value, String fieldName) {
