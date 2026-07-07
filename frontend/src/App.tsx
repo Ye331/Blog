@@ -198,7 +198,7 @@ export default function App() {
       <AnimatePresence>{isAdmin && isProfileModalOpen && <ProfileModal currentProfile={profile} onSave={handleSaveProfile} onClose={() => setIsProfileModalOpen(false)} />}</AnimatePresence>
       <footer className="w-full py-10 mt-auto border-t-2 border-dashed border-neutral-900/10 bg-[#FCF9EA]">
         <div className="mx-auto max-w-5xl px-6 text-center">
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="inline-flex px-4 py-2 bg-white/60 hover:bg-white border-2 border-transparent hover:border-neutral-900 rounded-full text-[10px] font-sans uppercase tracking-[0.15em] font-bold text-neutral-400 hover:text-neutral-900 transition-all">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="inline-flex text-[10px] font-sans uppercase tracking-[0.15em] font-bold text-neutral-400 hover:text-neutral-900 transition-colors">
             苏ICP备2026044151号-1
           </a>
         </div>
